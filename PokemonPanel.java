@@ -1,7 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.Dimension;
 import java.awt.Color;
 import java.awt.Choice;
@@ -12,7 +11,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
-import javax.swing.BorderFactory;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -23,8 +21,8 @@ import java.io.IOException;
 import java.util.Random;
 
 /**
-* This program is a GUI Pokemon game where the user 
-*  can create a team of Pokemon and battle the computer.
+* This program is a GUI Pokemon game where the user can
+*  create a team of Pokemon and play against the program.
 * @author Jun Kim
 * @since 12/15/21
 */
@@ -35,9 +33,13 @@ public class PokemonPanel extends JPanel {
    static final int NUM_POKEMON = 9;
    
    /** "Choose Pokemon" label. */
-   private JLabel lAvailable = new JLabel("Choose a Pokemon:");
+   private JLabel lAvailable = new JLabel("   Choose a Pokemon:");
+   /** "Your Team" label. */
+   private JLabel lYourTeam = new JLabel("    Your Team:");
+   /** "Opponent's Team" label. */
+   private JLabel lOppTeam = new JLabel("          Opponent's Team:");
    /** Whitespace label. */
-   private JLabel lBlank = new JLabel("                               ");
+   private JLabel lBlank = new JLabel("                                       ");
    
    /** Top sub-panel. */
    private JPanel northSubPanel = new JPanel(new GridBagLayout());
@@ -69,16 +71,20 @@ public class PokemonPanel extends JPanel {
    private GridBagConstraints choiceConstraint = new GridBagConstraints();
    /** GridBag Layout constraint for whitespace label. */
    private GridBagConstraints blankConstraint = new GridBagConstraints();
+   /** GridBag Layout constraint for player's team text area. */
+   private GridBagConstraints playerConstraint = new GridBagConstraints();
+   /** GridBag Layout constraint for opponent's team text area. */
+   private GridBagConstraints oppConstraint = new GridBagConstraints();
    /** GridBag Layout constraint for file status label. */
    private GridBagConstraints statusConstraint = new GridBagConstraints();
 
    /** Text area to list player's team. */
-   private JTextArea taListPlayer = new JTextArea(25, 15);
+   private JTextArea taListPlayer = new JTextArea(25, 16);
    /** Text area to log battle. */
-   private JTextArea taBattleLog = new JTextArea(25, 21);
+   private JTextArea taBattleLog = new JTextArea(25, 22);
    /** Text area to list opponent's team. */
-   private JTextArea taListEnemy = new JTextArea(25, 15);
-   /** Text area to display file saved status. */
+   private JTextArea taListOpp = new JTextArea(25, 16);
+   /** Text field to display file saved status. */
    private JTextField tfFileStatus = new JTextField(18);
    
    /** East scroll pane. */
@@ -87,7 +93,7 @@ public class PokemonPanel extends JPanel {
       JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
    /** West scroll pane. */
    private JScrollPane westScroll = new JScrollPane(
-      taListEnemy, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+      taListOpp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
       JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
    /** Center scroll pane. */
    private JScrollPane centerScroll = new JScrollPane(
@@ -103,12 +109,12 @@ public class PokemonPanel extends JPanel {
    /** ArrayList to hold player's team. */
    private ArrayList<Pokemon> playerArray = new ArrayList<>();
    /** ArrayList to hold opponent's team. */
-   private ArrayList<Pokemon> enemyArray = new ArrayList<>();
+   private ArrayList<Pokemon> oppArray = new ArrayList<>();
    
    /** String to display player's team. */
    private String sPlayerTeam = "";
    /** String to display opponent's team. */
-   private String sEnemyTeam = "";
+   private String sOppTeam = "";
    /** String to display battle log. */
    private String sBattleLog = "";
    /** Strings to display starting instructions. */
@@ -123,12 +129,12 @@ public class PokemonPanel extends JPanel {
    /** Random number to pick a Pokemon from the player's team. */  
    private int playerIndex = 0;
    /** Random number to pick a Pokemon from the opponent's team. */
-   private int enemyIndex = 0; 
+   private int oppIndex = 0; 
    
    /** Player's Pokemon that is currently in play. */
    private Pokemon playerPokemon = new Pokemon("Dummy", "Dummy", 1, 1);
    /** Opponent's Pokemon that is currently in play. */
-   private Pokemon enemyPokemon = new Pokemon("Dummy", "Dummy", 1, 1);
+   private Pokemon oppPokemon = new Pokemon("Dummy", "Dummy", 1, 1);
    
       /** Indicates whose turn it is. */
    private boolean playerTurn = true;
@@ -145,7 +151,7 @@ public class PokemonPanel extends JPanel {
    public PokemonPanel() {
    
       this.setLayout(new BorderLayout());
-      this.setPreferredSize(new Dimension(650, 545));
+      this.setPreferredSize(new Dimension(745, 545));
       
       //Create dropdown list
       chPokemon.add("Random");
@@ -166,17 +172,16 @@ public class PokemonPanel extends JPanel {
       choiceConstraint.gridx = 1;
       choiceConstraint.gridy = 0;
       choiceConstraint.anchor = GridBagConstraints.LINE_START;
-      choiceConstraint.insets = new Insets(0, 3, 0, 0);
       northSubPanel.add(chPokemon, choiceConstraint);
       
       //"Add Pokemon to Team" button
-      addConstraint.gridx = 1;
-      addConstraint.gridy = 1;
+      addConstraint.gridx = 2;
+      addConstraint.gridy = 0;
       northSubPanel.add(bAddPokemon, addConstraint);
       bAddPokemon.addActionListener(listener); 
       
       //"Clear Team" button
-      clearConstraint.gridx = 2;
+      clearConstraint.gridx = 3;
       clearConstraint.gridy = 0;
       northSubPanel.add(bClearTeam, clearConstraint);
       bClearTeam.addActionListener(listener);
@@ -187,17 +192,29 @@ public class PokemonPanel extends JPanel {
       northSubPanel.add(bBattle, battleConstraint);
       bBattle.addActionListener(listener);
       
+      //"Opponent's Team" label
+      oppConstraint.gridx = 0;
+      oppConstraint.gridy = 2;
+      northSubPanel.add(lOppTeam, oppConstraint);
+      
+      //"Your Team" label
+      playerConstraint.gridx = 4;
+      playerConstraint.gridy = 2;
+      playerConstraint.anchor = GridBagConstraints.LINE_START;
+      northSubPanel.add(lYourTeam, playerConstraint);
+      
       //Whitespaces for alignment           
-      blankConstraint.gridx = 3;
+      blankConstraint.gridx = 4;
       blankConstraint.gridy = 0;
       northSubPanel.add(lBlank, blankConstraint);
       blankConstraint.gridy = 1;
       northSubPanel.add(lBlank, blankConstraint); 
+      blankConstraint.gridy = 2;
+      northSubPanel.add(lBlank, blankConstraint);
    
       //** CENTER SUBPANEL **//
       add("Center", centerSubPanel);
       //Battle Log
-      centerSubPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
       centerSubPanel.add(centerScroll);
       centerScroll.setBorder(null);
       centerScroll.getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
@@ -207,7 +224,6 @@ public class PokemonPanel extends JPanel {
       //** EAST SUBPANEL **//
       add("East", eastSubPanel);
       //Add elements to list Player's team
-      eastSubPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
       eastSubPanel.add(eastScroll);
       taListPlayer.setBackground(Color.CYAN);
       eastScroll.getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
@@ -216,11 +232,10 @@ public class PokemonPanel extends JPanel {
       //** WEST SUBPANEL **//
       add("West", westSubPanel);
       //Add elements to list Opponent's team
-      westSubPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
       westSubPanel.add(westScroll);
-      taListEnemy.setBackground(Color.PINK);
+      taListOpp.setBackground(Color.PINK);
       westScroll.getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
-      taListEnemy.setEditable(false);
+      taListOpp.setEditable(false);
      
       //** SOUTH SUBPANEL **//
       add("South", southSubPanel);
@@ -258,56 +273,56 @@ public class PokemonPanel extends JPanel {
             } else {
                playerArray.add(MakePokemon.forPlayer(chPokemon.getSelectedItem())); 
             }      
-            enemyArray.add(MakePokemon.forEnemy(Integer.toString(rand.nextInt(NUM_POKEMON))));
+            oppArray.add(MakePokemon.forOpp(Integer.toString(rand.nextInt(NUM_POKEMON))));
             
             //Display both teams
             sPlayerTeam += playerArray.get(playerArray.size() - 1).toString() + "\n\n";
-            sEnemyTeam += enemyArray.get(enemyArray.size() - 1).toString() + "\n\n";
+            sOppTeam += oppArray.get(oppArray.size() - 1).toString() + "\n\n";
             taListPlayer.setText(sPlayerTeam);            
-            taListEnemy.setText(sEnemyTeam);
+            taListOpp.setText(sOppTeam);
          }
          
          /** "Start Battle" button. Subsequently changes to say "Next Attack" */
-         if (event.getSource() == bBattle && playerArray.size() > 0 && enemyArray.size() > 0) {
+         if (event.getSource() == bBattle && playerArray.size() > 0 && oppArray.size() > 0) {
             gameInProgress = true;
             playerIndex = rand.nextInt(playerArray.size());
-            enemyIndex = rand.nextInt(enemyArray.size());
+            oppIndex = rand.nextInt(oppArray.size());
             playerPokemon = playerArray.get(playerIndex);
-            enemyPokemon = enemyArray.get(enemyIndex);
+            oppPokemon = oppArray.get(oppIndex);
             bBattle.setText("Next Attack");
                                   
             //Attack and display battle message
             //Player's turn
             if (playerTurn) {
                try {
-                  enemyPokemon.setHp(enemyPokemon.getHp() - playerPokemon.getAtk());
+                  oppPokemon.setHp(oppPokemon.getHp() - playerPokemon.getAtk());
                } catch (PokemonException PE) {
-                  enemyPokemon.setHp(0);
+                  oppPokemon.setHp(0);
                }
                   
                sBattleLog = sBattleLog.concat("Your turn:\n" 
-                  + playerPokemon.getName() + " attacks " + enemyPokemon.getName() + "!\n" 
-                  + enemyPokemon.getName() + "'s remaining HP: " + enemyPokemon.getHp() + "\n");
-               if (enemyPokemon.getHp() == 0) {
-                  sBattleLog = sBattleLog.concat(enemyPokemon.getName() + " has fainted.\n");
-                  enemyArray.remove(enemyIndex);
+                  + playerPokemon.getName() + " attacks " + oppPokemon.getName() + "!\n" 
+                  + oppPokemon.getName() + "'s remaining HP: " + oppPokemon.getHp() + "\n");
+               if (oppPokemon.getHp() == 0) {
+                  sBattleLog = sBattleLog.concat(oppPokemon.getName() + " has fainted.\n");
+                  oppArray.remove(oppIndex);
                }           
-               //Update enemy team display
-               sEnemyTeam = "";
-               for (int i = 0; i < enemyArray.size(); i++) {
-                  sEnemyTeam += enemyArray.get(i).toString() + "\n\n";
-                  taListEnemy.setText(sEnemyTeam);
+               //Update opponent's team display
+               sOppTeam = "";
+               for (int i = 0; i < oppArray.size(); i++) {
+                  sOppTeam += oppArray.get(i).toString() + "\n\n";
+                  taListOpp.setText(sOppTeam);
                }
                
             //Opponent's turn
             } else {
                try {
-                  playerPokemon.setHp(playerPokemon.getHp() - enemyPokemon.getAtk());
+                  playerPokemon.setHp(playerPokemon.getHp() - oppPokemon.getAtk());
                } catch (PokemonException PE) {
                   playerPokemon.setHp(0);
                }                 
                sBattleLog = sBattleLog.concat("Opponent's turn:\n" 
-                  + enemyPokemon.getName() + " attacks " + playerPokemon.getName() + "!\n"
+                  + oppPokemon.getName() + " attacks " + playerPokemon.getName() + "!\n"
                   + playerPokemon.getName() + "'s remaining HP: " + playerPokemon.getHp() + "\n");
                if (playerPokemon.getHp() == 0) {
                   sBattleLog = sBattleLog.concat(playerPokemon.getName() + " has fainted.\n");
@@ -325,13 +340,13 @@ public class PokemonPanel extends JPanel {
             if (playerArray.size() == 0) {
                sBattleLog = sBattleLog.concat("\nYou have been defeated\n");
                taListPlayer.setText("");
-               sEnemyTeam = "";
+               sOppTeam = "";
                bClearTeam.setText("Play Again");
                bClearTeam.setForeground(Color.RED);
             }
-            if (enemyArray.size() == 0) {
+            if (oppArray.size() == 0) {
                sBattleLog = sBattleLog.concat("\nYou won!\n");
-               taListEnemy.setText("");
+               taListOpp.setText("");
                sPlayerTeam = "";
                bClearTeam.setForeground(Color.RED);
                bClearTeam.setText("Play Again");
@@ -362,15 +377,15 @@ public class PokemonPanel extends JPanel {
          //"Clear team" button
          if (event.getSource() == bClearTeam) {
             playerArray.clear();
-            enemyArray.clear();
+            oppArray.clear();
             sPlayerTeam = "";
-            sEnemyTeam = "";
+            sOppTeam = "";
             sBattleLog = "";
             bBattle.setText("Start Battle!");
             bClearTeam.setText("Clear Team");
             bClearTeam.setForeground(Color.BLACK);
             taListPlayer.setText("");
-            taListEnemy.setText("");
+            taListOpp.setText("");
             taBattleLog.setText("");
             tfFileStatus.setText("");
             tfFileStatus.setBackground(UIManager.getColor("Panel.background"));
@@ -382,7 +397,7 @@ public class PokemonPanel extends JPanel {
    
    
    /**
-   * Creates new Pokemon objects.
+   * Generates new Pokemon objects.
    */
    private class MakePokemon {
    
@@ -431,7 +446,7 @@ public class PokemonPanel extends JPanel {
          * @param choice the choice of Pokemon, either the species or a random integer 0-8.
          * @return a Pokemon object.
          */ 
-      private static Pokemon forEnemy(String choice) {
+      private static Pokemon forOpp(String choice) {
          switch(choice) {
             case "Bulbasaur":
             case "0":
@@ -463,6 +478,6 @@ public class PokemonPanel extends JPanel {
             default:
                return new Pokemon("Dummy", "Dummy", 1, 1);
          }
-      } //Close forEnemy method
+      } //Close forOpp method
    } //close MakePokemon class
 } //Close PokemonPanel class
