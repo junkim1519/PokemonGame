@@ -11,4 +11,4 @@ This project demonstrates:
 - Use of ArrayLists to hold teams of Pokemon
 - Generating random events via random numbers
 - Writing and saving files
-- Proper JavaDoc documentation
+- Proper JavaDoc comments and documentation
