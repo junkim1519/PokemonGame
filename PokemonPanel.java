@@ -22,7 +22,7 @@ import java.util.Random;
 
 /**
 * This program is a GUI Pokemon game where the user can
-*  create a team of Pokemon and play against the program.
+*   create a team of Pokemon and play against the program.
 * @author Jun Kim
 * @since 12/15/21
 */
@@ -89,16 +89,16 @@ public class PokemonPanel extends JPanel {
    
    /** East scroll pane. */
    private JScrollPane eastScroll = new JScrollPane(
-      taListPlayer, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
-      JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+       taListPlayer, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+       JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
    /** West scroll pane. */
    private JScrollPane westScroll = new JScrollPane(
-      taListOpp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
-      JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+       taListOpp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+       JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
    /** Center scroll pane. */
    private JScrollPane centerScroll = new JScrollPane(
-      taBattleLog, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
-      JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+       taBattleLog, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+       JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
          
    /** Drop down menu. */
    private Choice chPokemon = new Choice();
@@ -119,30 +119,16 @@ public class PokemonPanel extends JPanel {
    private String sBattleLog = "";
    /** Strings to display starting instructions. */
    private String sInstructions = "Instructions: \n\n"
-      + "1. Choose a Pokemon from the drop-\n    down menu\n\n"
-      + "2. Click \"Add Pokemon\" to add that\n    Pokemon to your team\n\n"
-      + "3. For every Pokemon added, your\n    opponent will also gain a Pokemon\n\n"
-      + "4. Click \"Start Battle\" to begin!";
-         
-   /** Random number generator. */
-   private Random rand = new Random();
-   /** Random number to pick a Pokemon from the player's team. */  
-   private int playerIndex = 0;
-   /** Random number to pick a Pokemon from the opponent's team. */
-   private int oppIndex = 0; 
+       + "1. Choose a Pokemon from the drop-\n    down menu\n\n"
+       + "2. Click \"Add Pokemon\" to add that\n    Pokemon to your team\n\n"
+       + "3. For every Pokemon added, your\n    opponent will also gain a Pokemon\n\n"
+       + "4. Click \"Start Battle\" to begin!";
    
-   /** Player's Pokemon that is currently in play. */
-   private Pokemon playerPokemon = new Pokemon("Dummy", "Dummy", 1, 1);
-   /** Opponent's Pokemon that is currently in play. */
-   private Pokemon oppPokemon = new Pokemon("Dummy", "Dummy", 1, 1);
-   
-      /** Indicates whose turn it is. */
+   /** Indicates whose turn it is. */
    private boolean playerTurn = true;
+   
    /** Indicates whether the game is currently in progress or not. */
    private boolean gameInProgress = false;
-   
-   /** File object to save team as file. */
-   private File f = new File("Battle_Log.txt");
    
       
    /**
@@ -266,6 +252,7 @@ public class PokemonPanel extends JPanel {
       
          /** "Add Pokemon" button */
          if (event.getSource() == bAddPokemon && !gameInProgress) {
+            Random rand = new Random();
             
             //Add a Pokemon to both teams
             if (chPokemon.getSelectedItem().equals("Random")) {
@@ -285,10 +272,13 @@ public class PokemonPanel extends JPanel {
          /** "Start Battle" button. Subsequently changes to say "Next Attack" */
          if (event.getSource() == bBattle && playerArray.size() > 0 && oppArray.size() > 0) {
             gameInProgress = true;
-            playerIndex = rand.nextInt(playerArray.size());
-            oppIndex = rand.nextInt(oppArray.size());
-            playerPokemon = playerArray.get(playerIndex);
-            oppPokemon = oppArray.get(oppIndex);
+            Random rand = new Random();
+            
+            //Choose Pokemon from each team to participate in battle
+            int playerIndex = rand.nextInt(playerArray.size());
+            int oppIndex = rand.nextInt(oppArray.size());
+            Pokemon playerPokemon = playerArray.get(playerIndex);
+            Pokemon oppPokemon = oppArray.get(oppIndex);
             bBattle.setText("Next Attack");
                                   
             //Attack and display battle message
@@ -360,7 +350,8 @@ public class PokemonPanel extends JPanel {
          
          /** "Save Battle Log as file" button */
          if (event.getSource() == bSaveFile) {
-            try {
+            try {               
+               File f = new File("Battle_Log.txt");
                FileWriter fw = new FileWriter(f);
                PrintWriter writer = new PrintWriter(fw);
                writer.println(sBattleLog);
